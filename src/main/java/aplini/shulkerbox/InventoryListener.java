@@ -24,6 +24,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
+import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+
 public class InventoryListener implements Listener {
     Shulkerbox plugin;
     FileConfiguration config;
@@ -87,8 +92,17 @@ public class InventoryListener implements Listener {
             return;
         }
 
+        // 添加用于防止堆叠的NBT
+        ItemMeta meta = shulkerItem.getItemMeta();
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        NamespacedKey nbtKey = new NamespacedKey(plugin, "__shulkerbox_plugin");
+        if(!data.has(nbtKey, PersistentDataType.STRING)){
+            data.set(nbtKey, PersistentDataType.STRING, String.valueOf(System.currentTimeMillis()));
+            shulkerItem.setItemMeta(meta);
+        }
 
-        Inventory shulker_inventory = ((ShulkerBox)((BlockStateMeta)shulkerItem.getItemMeta()).getBlockState()).getSnapshotInventory();
+
+        Inventory shulker_inventory = ((ShulkerBox)((BlockStateMeta)meta).getBlockState()).getSnapshotInventory();
         String displayName = shulkerItem.getItemMeta().getDisplayName();
         Inventory inventory;
         if (displayName.isEmpty()) {
@@ -107,9 +121,31 @@ public class InventoryListener implements Listener {
 
     private void CloseShulkerbox(HumanEntity player) {
         ItemStack shulkerItem = openShulkerBoxes.get(player.getUniqueId());
+
+        // 删除用于防止堆叠的NBT
+//        ItemMeta meta = shulkerItem.getItemMeta();
+//        PersistentDataContainer data = meta.getPersistentDataContainer();
+//        NamespacedKey nbtKey = new NamespacedKey(plugin, "__shulkerbox_plugin");
+//        if(data.has(nbtKey, PersistentDataType.STRING)){
+//            data.remove(nbtKey);
+//        }
+//        shulkerItem.setItemMeta(meta);
+
         BlockStateMeta meta = (BlockStateMeta)shulkerItem.getItemMeta();
         ShulkerBox shulkerbox = (ShulkerBox)meta.getBlockState();
         shulkerbox.getInventory().setContents(player.getOpenInventory().getTopInventory().getContents());
+
+        // 删除用于防止堆叠的NBT
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        NamespacedKey nbtKey = new NamespacedKey(plugin, "__shulkerbox_plugin");
+        if(data.has(nbtKey, PersistentDataType.STRING)){
+            data.remove(nbtKey);
+        }
+
+//        // 如果潜影盒为空, 则删除无用的NBT, 防止影响堆叠. 类似: https://bugs.mojang.com/browse/MC-211283
+//        if(isShulkerBoxEmpty(shulkerItem)){
+//            data.remove(new NamespacedKey(plugin, "tag"));
+//        }
 
         meta.setBlockState(shulkerbox);
         shulkerItem.setItemMeta(meta);
@@ -231,5 +267,16 @@ public class InventoryListener implements Listener {
         if (openShulkerBoxes.containsKey(player.getUniqueId())) {
             CloseShulkerbox(player);
         }
+    }
+
+    // 判断潜影盒是否为空
+    public boolean isShulkerBoxEmpty(ItemStack shulkerBox) {
+        ShulkerBox shulker = (ShulkerBox) ((BlockStateMeta) shulkerBox.getItemMeta()).getBlockState();
+        for (ItemStack item : shulker.getInventory().getContents()) {
+            if (item != null && !item.getType().isAir()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

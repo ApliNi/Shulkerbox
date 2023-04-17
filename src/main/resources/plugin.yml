@@ -1,0 +1,4 @@
+name: Shulkerbox
+version: '${project.version}'
+main: aplini.shulkerbox.Shulkerbox
+api-version: 1.19

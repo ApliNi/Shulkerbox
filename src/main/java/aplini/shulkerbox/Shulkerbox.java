@@ -1,4 +1,4 @@
-package me.Percyqaz.Shulkerbox;
+package aplini.shulkerbox;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -9,7 +9,6 @@ public class Shulkerbox extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.getLogger().info("Activated");
         getServer().getPluginManager().registerEvents(new InventoryListener(this, config), this);
     }
 }

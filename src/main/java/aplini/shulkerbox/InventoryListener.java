@@ -78,10 +78,10 @@ public class InventoryListener implements Listener {
     }
 
     private void OpenShulkerbox(HumanEntity player, ItemStack shulkerItem) {
-        // 堆叠数量检查
-        if(shulkerItem.getAmount() != 1){
-            return;
-        }
+//        // 堆叠数量检查, 写在使用此函数的监听器中
+//        if(shulkerItem.getAmount() != 1){
+//            return;
+//        }
         // Don't open the box if already open (avoids a duplication bug)
         if (openShulkerBoxes.containsKey(player.getUniqueId()) && openShulkerBoxes.get(player.getUniqueId()).equals(shulkerItem)) {
             return;
@@ -122,6 +122,7 @@ public class InventoryListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void InventoryClick(InventoryClickEvent e) {
+        ItemStack item = e.getCurrentItem();
         if (e.getAction() == InventoryAction.NOTHING) {
             return;
         }
@@ -132,7 +133,7 @@ public class InventoryListener implements Listener {
                     (
                             e.getAction() == InventoryAction.HOTBAR_SWAP
                                     || e.getAction() == InventoryAction.HOTBAR_MOVE_AND_READD
-                                    || (e.getCurrentItem() != null && IsShulkerBox(e.getCurrentItem().getType()))
+                                    || (item != null && IsShulkerBox(item.getType()))
                     )
             ) {
                 e.setCancelled(true);
@@ -147,7 +148,6 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        ItemStack item = e.getCurrentItem();
         assert item != null;
         Material itemType = item.getType();
 
@@ -168,11 +168,14 @@ public class InventoryListener implements Listener {
         }
 
         if (IsShulkerBox(itemType)) {
-            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(
-                    plugin,
-                    () -> OpenShulkerbox(e.getWhoClicked(), item)
-            );
-            e.setCancelled(true);
+            // 堆叠数量检查
+            if(item.getAmount() == 1){
+                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(
+                        plugin,
+                        () -> OpenShulkerbox(e.getWhoClicked(), item)
+                );
+                e.setCancelled(true);
+            }
         }
     }
 
@@ -203,11 +206,14 @@ public class InventoryListener implements Listener {
         }
 
         if (IsShulkerBox(itemType)) {
-            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(
-                    plugin,
-                    () -> OpenShulkerbox(player, item)
-            );
-            e.setCancelled(true);
+            // 堆叠数量检查
+            if(item.getAmount() == 1){
+                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(
+                        plugin,
+                        () -> OpenShulkerbox(player, item)
+                );
+                e.setCancelled(true);
+            }
         }
     }
 

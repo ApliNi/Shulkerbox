@@ -9,8 +9,5 @@
         <module name="Shulkerbox" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="Shulkerbox" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

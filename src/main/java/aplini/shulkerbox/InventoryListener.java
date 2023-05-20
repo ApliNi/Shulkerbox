@@ -122,15 +122,6 @@ public class InventoryListener implements Listener {
     private void CloseShulkerbox(HumanEntity player) {
         ItemStack shulkerItem = openShulkerBoxes.get(player.getUniqueId());
 
-        // 删除用于防止堆叠的NBT
-//        ItemMeta meta = shulkerItem.getItemMeta();
-//        PersistentDataContainer data = meta.getPersistentDataContainer();
-//        NamespacedKey nbtKey = new NamespacedKey(plugin, "__shulkerbox_plugin");
-//        if(data.has(nbtKey, PersistentDataType.STRING)){
-//            data.remove(nbtKey);
-//        }
-//        shulkerItem.setItemMeta(meta);
-
         BlockStateMeta meta = (BlockStateMeta)shulkerItem.getItemMeta();
         ShulkerBox shulkerbox = (ShulkerBox)meta.getBlockState();
         shulkerbox.getInventory().setContents(player.getOpenInventory().getTopInventory().getContents());
@@ -184,7 +175,11 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        assert item != null;
+        // 这里出现过 NullPointerException
+        if(item == null){
+            return;
+        }
+
         Material itemType = item.getType();
 
         if (itemType == Material.ENDER_CHEST && item.getAmount() == 1) {
@@ -269,14 +264,14 @@ public class InventoryListener implements Listener {
         }
     }
 
-    // 判断潜影盒是否为空
-    public boolean isShulkerBoxEmpty(ItemStack shulkerBox) {
-        ShulkerBox shulker = (ShulkerBox) ((BlockStateMeta) shulkerBox.getItemMeta()).getBlockState();
-        for (ItemStack item : shulker.getInventory().getContents()) {
-            if (item != null && !item.getType().isAir()) {
-                return false;
-            }
-        }
-        return true;
-    }
+//    // 判断潜影盒是否为空
+//    public boolean isShulkerBoxEmpty(ItemStack shulkerBox) {
+//        ShulkerBox shulker = (ShulkerBox) ((BlockStateMeta) shulkerBox.getItemMeta()).getBlockState();
+//        for (ItemStack item : shulker.getInventory().getContents()) {
+//            if (item != null && !item.getType().isAir()) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 }
